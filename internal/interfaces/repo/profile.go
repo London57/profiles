@@ -5,7 +5,7 @@ import (
 	"github.com/London57/profiles/internal/dtos"	
 )
 
-type ProfileRepo interface {
+type ProfilesRepo interface {
 	CreateProfile(context.Context, dtos.ProfileCreateRequest)
 	AddPreferences(context.Context, dtos.AddPreferencesRequest)
 }
