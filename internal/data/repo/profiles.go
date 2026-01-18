@@ -8,26 +8,33 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/London57/profiles/internal/data/entities"
-	"github.com/London57/profiles/internal/interfaces/repo"
 )
 
 type ProfilesRepo struct {
 	pool *pgxpool.Pool
-	repo.ProfilesRepo
 }
 
-func (r ProfilesRepo) Create_profile(ctx context.Context, profile entities.ProfileEntity) (entities.ProfileEntity, error) {
+
+
+func (r ProfilesRepo) Create_profile(ctx context.Context, profile entities.ProfileEntity) (*entities.ProfileEntity, error) {
 	var (
 		conn *pgxpool.Conn
 		err error
 		waiting time.Duration
 	)
-	stmt := fmt.Sprintf(`insert into %s values (?, ?, ?, ?, ?, ?)`, profilesDB) 
+	
+	stmt := fmt.Sprintf(`insert into %s values (?, ?, ?, ?, ?)`, profilesDB)
+	res := entities.ProfileEntity{}
 
 	for i := 0; i < maxRetries; i++ {
 		conn, err = r.pool.Acquire(ctx)
 		if err == nil {
-			conn.Exec(ctx, stmt, profile.ID, profile.Age, profile.Name, profile.Gender, profile.Longitude, profile.Latitude)
+			defer conn.Release()
+			row := conn.QueryRow(ctx, stmt, profile.Age, profile.Name, profile.Gender, profile.Longitude, profile.Latitude)
+			err := row.Scan(&res)
+			if err != nil {
+				return &res, fmt.Errorf("database error: %w", err)
+			}
 		}
 		stats := r.pool.Stat()
 		if stats.AcquiredConns() >= stats.MaxConns() {
@@ -39,9 +46,11 @@ func (r ProfilesRepo) Create_profile(ctx context.Context, profile entities.Profi
 		
 		select {
 		case <- ctx.Done():
+			conn.Release()
 			return entities.ProfileEntity{}, ctx.Err()
 		case <- time.After(waiting):
 			continue
 		}
 	}
+	return 
 }
