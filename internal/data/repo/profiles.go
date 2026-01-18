@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -21,11 +22,12 @@ func (r ProfilesRepo) Create_profile(ctx context.Context, profile entities.Profi
 		err error
 		waiting time.Duration
 	)
+	stmt := fmt.Sprintf(`insert into %s values (?, ?, ?, ?, ?, ?)`, profilesDB) 
 
 	for i := 0; i < maxRetries; i++ {
 		conn, err = r.pool.Acquire(ctx)
 		if err == nil {
-			
+			conn.Exec(ctx, stmt, profile.ID, profile.Age, profile.Name, profile.Gender, profile.Longitude, profile.Latitude)
 		}
 		stats := r.pool.Stat()
 		if stats.AcquiredConns() >= stats.MaxConns() {
