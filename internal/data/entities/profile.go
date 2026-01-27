@@ -1,7 +1,7 @@
 package entities
 
 import (
-	"fmt"
+	"time"
 
 	"github.com/London57/profiles/internal/consts"
 	"github.com/google/uuid"
@@ -9,22 +9,24 @@ import (
 
 type ProfileEntity struct {
 	ID uuid.UUID
+	Email string
+	Username string
+	Password string
 	Name string
-	Age int8
+	Birthday time.Time
 	Gender consts.Gender
 	Longitude float32 
 	Latitude float32
 }
 
-func (p ProfileEntity) Fields() (string, string) {
-	return fmt.Sprintf(""), fmt.Sprintf()
-}
+func (ProfileEntity) New(id uuid.UUID, email, name, username, password string, birthday time.Time, gender consts.Gender, long float32, lat float32) ProfileEntity {
 
-func (ProfileEntity) New(id uuid.UUID, name string, age int8, gender consts.Gender, long float32, lat float32) ProfileEntity {
 	return ProfileEntity{
 		ID: id,
+		Email: email,
 		Name: name, 
-		Age: age,
+		Birthday: birthday,
+		Password: password,
 		Gender: gender,
 		Longitude: long,
 		Latitude: lat,

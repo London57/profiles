@@ -3,54 +3,81 @@ package repo
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/London57/profiles/internal/data/entities"
 )
 
+type BaseRepo struct {
+	pool *pgxpool.Pool
+}
+
 type ProfilesRepo struct {
 	pool *pgxpool.Pool
 }
 
+func (r ProfilesRepo) CreateProfile(ctx context.Context, profile entities.ProfileEntity) (*entities.ProfileEntity, error) {	
+	stmt := fmt.Sprintf(`insert into %s (birthday, email, name, username, gender, longitude, latitude) values (?, ?, ?, ?, ?, ?)`, profilesDB)
 
-
-func (r ProfilesRepo) Create_profile(ctx context.Context, profile entities.ProfileEntity) (*entities.ProfileEntity, error) {
-	var (
-		conn *pgxpool.Conn
-		err error
-		waiting time.Duration
-	)
-	
-	stmt := fmt.Sprintf(`insert into %s values (?, ?, ?, ?, ?)`, profilesDB)
 	res := entities.ProfileEntity{}
 
-	for i := 0; i < maxRetries; i++ {
-		conn, err = r.pool.Acquire(ctx)
-		if err == nil {
-			defer conn.Release()
-			row := conn.QueryRow(ctx, stmt, profile.Age, profile.Name, profile.Gender, profile.Longitude, profile.Latitude)
-			err := row.Scan(&res)
-			if err != nil {
-				return &res, fmt.Errorf("database error: %w", err)
-			}
-		}
-		stats := r.pool.Stat()
-		if stats.AcquiredConns() >= stats.MaxConns() {
-			waiting = time.Duration(i*i)*100*time.Millisecond
-		}
-		if waiting > 1*time.Second {
-			waiting = 1*time.Second
-		}
-		
-		select {
-		case <- ctx.Done():
-			conn.Release()
-			return entities.ProfileEntity{}, ctx.Err()
-		case <- time.After(waiting):
-			continue
-		}
+	birthday := pgtype.Date{
+		Time: profile.Birthday,
+		Valid: true,
 	}
-	return 
+	row := r.pool.QueryRow(ctx, stmt, birthday, profile.Email, profile.Name, profile.Username, profile.Gender, profile.Longitude, profile.Latitude)
+	err := row.Scan(&res)
+	if err != nil {
+		return nil, fmt.Errorf("database error: %w", err)
+	}
+		
+	return &res, nil
 }
+func (r ProfilesRepo) UpdateProfile(ctx context.Context, fields map[string]any) (*entities.ProfileEntity, error) {
+	values := make([]any, len(fields))
+	keys := make([]string, len(fields))
+	var result_string strings.Builder
+
+	for k, v := range fields {
+		values = append(values, v)
+		result_string.WriteString(k)
+		result_string.WriteByte('=')
+		result_string.WriteByte('?')
+		result_string.WriteString(", ")
+	}
+
+	values = append(values, fields["id"])
+	s := result_string.String()
+	result_string.Reset()
+	result_string.WriteString(s[:len(s)-2])
+	stmt := fmt.Sprintf("update %s set %s where id = ? returning %s", profilesDB, result_string.String(), strings.Join(keys, ", "))
+
+	updated_profile := entities.ProfileEntity{}
+	row := r.pool.QueryRow(ctx, stmt, values...)
+
+	err := row.Scan(&updated_profile)
+	if err != nil {
+		return nil, fmt.Errorf("database error: %w", err)
+	}
+	return &updated_profile, nil
+}
+
+func (r ProfilesRepo) GetProfileIdByEmail(ctx context.Context, email string) (uuid.UUID, error) {
+	stmt := fmt.Sprintf("select id from %s where email=?", profilesDB)
+
+	var res uuid.UUID
+
+	row := r.pool.QueryRow(ctx, stmt, email)
+	err := row.Scan(res)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("database error: %w", err)
+	}
+
+	return res, nil
+}
+

@@ -12,7 +12,6 @@ import (
 
 type ProfileCreateHandler struct {
 	create interactors.ProfileCreate
-	update interactors.ProfileUpdate
 	getByEmail interactors.GetProfileByEmail
 }
 
