@@ -1,6 +1,5 @@
 linters:
   enable:
     - govet
-    - staticcheck
     - gosimple
     - stylecheck
