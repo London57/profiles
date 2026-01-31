@@ -22,7 +22,7 @@ type ProfilesRepo struct {
 }
 
 func (r ProfilesRepo) CreateProfile(ctx context.Context, profile entities.ProfileEntity) (*entities.ProfileEntity, error) {	
-	stmt := fmt.Sprintf(`insert into %s (birthday, email, name, username, gender, longitude, latitude) values (?, ?, ?, ?, ?, ?)`, profilesDB)
+	stmt := fmt.Sprintf(`insert into %s (birthday, email, name, username, password, gender, longitude, latitude) values (?, ?, ?, ?, ?, ?, ?, ?)`, profilesDB)
 
 	res := entities.ProfileEntity{}
 
@@ -30,14 +30,32 @@ func (r ProfilesRepo) CreateProfile(ctx context.Context, profile entities.Profil
 		Time: profile.Birthday,
 		Valid: true,
 	}
-	row := r.pool.QueryRow(ctx, stmt, birthday, profile.Email, profile.Name, profile.Username, profile.Gender, profile.Longitude, profile.Latitude)
-	err := row.Scan(&res)
+	row := r.pool.QueryRow(ctx, stmt, birthday, profile.Email, profile.Name, profile.Username, profile.Password, profile.Gender, profile.Longitude, profile.Latitude)
+
+	var pgBirthday pgtype.Date
+	err := row.Scan(
+		&res.ID,
+        &pgBirthday,
+        &res.Email,
+        &res.Name,
+        &res.Username, 
+        &res.Password,
+        &res.Gender,
+        &res.Longitude,
+        &res.Latitude,
+	)
+
 	if err != nil {
 		return nil, fmt.Errorf("database error: %w", err)
 	}
-		
+
+	if pgBirthday.Valid {
+		res.Birthday = pgBirthday.Time
+	}
+
 	return &res, nil
 }
+
 func (r ProfilesRepo) UpdateProfile(ctx context.Context, fields map[string]any) (*entities.ProfileEntity, error) {
 	values := make([]any, len(fields))
 	keys := make([]string, len(fields))
@@ -64,6 +82,7 @@ func (r ProfilesRepo) UpdateProfile(ctx context.Context, fields map[string]any) 
 	if err != nil {
 		return nil, fmt.Errorf("database error: %w", err)
 	}
+
 	return &updated_profile, nil
 }
 

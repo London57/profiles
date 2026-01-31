@@ -37,6 +37,7 @@ func CreateRefreshToken(id uuid.UUID, name string, secret string, expiry int) (s
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsRefresh)
 	t, err := token.SignedString([]byte(secret))
 	if err != nil {
+
 		return "", fmt.Errorf("failed to signed jwt: %w", err)
 	}
 	return t, nil
@@ -76,4 +77,10 @@ func ExtractIDFromToken(requestToken string, secret string) (string, error) {
 		return "", fmt.Errorf("token is invalid")
 	}
 	return claims["id"].(string), nil
+}
+
+
+type JWT interface {
+	CreateAccessToken(id uuid.UUID, username string, secret string, expiry int) (string, error)
+	CreateRefreshToken(id uuid.UUID, name string, secret string, expiry int) (string, error)
 }

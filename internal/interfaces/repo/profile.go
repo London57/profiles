@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
+
 type ProfilesRepo interface {
 	CreateProfile(context.Context, entities.ProfileEntity) (*entities.ProfileEntity, error)
 	UpdateProfile(context.Context, map[string]any) (*entities.ProfileEntity, error)
