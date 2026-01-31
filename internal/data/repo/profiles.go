@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -73,7 +72,7 @@ func (r ProfilesRepo) UpdateProfile(ctx context.Context, fields map[string]any) 
 	s := result_string.String()
 	result_string.Reset()
 	result_string.WriteString(s[:len(s)-2])
-	stmt := fmt.Sprintf("update %s set %s where id = ? returning %s", profilesDB, result_string.String(), strings.Join(keys, ", "))
+	stmt := fmt.Sprintf("update %s set %s where id = ? returning %s", profilesDB, result_string.String(), strings.Join(keys, ", ")) // returning updated fields
 
 	updated_profile := entities.ProfileEntity{}
 	row := r.pool.QueryRow(ctx, stmt, values...)

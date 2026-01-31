@@ -1,4 +1,4 @@
-package interactors
+package create
 
 import (
 	"context"
@@ -44,7 +44,7 @@ func (uc ProfileCreate) Exec(ctx context.Context, r request.ProfileCreateRequest
 		Password: pswd,
 		Gender: r.Gender,
 		Longitude: r.Longitude,
-		Latitude: r.Latutude,
+		Latitude: r.Latitude,
 	}
 	
 	entity, err := uc.repo.CreateProfile(ctx, data)

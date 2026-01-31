@@ -31,7 +31,7 @@ func TestCreate(t *testing.T) {
 		{
 			name: "success",
 			req: request.ProfileCreateRequest{
-				Latutude: 14.01,
+				Latitude: 14.01,
 				Longitude: 16,
 				Email: "dad@adad.ru",
 				Username: "123",
@@ -59,7 +59,7 @@ func TestCreate(t *testing.T) {
 {
 			name: "jwt error",
 			req: request.ProfileCreateRequest{
-				Latutude: 14.01,
+				Latitude: 14.01,
 				Longitude: 16,
 				Email: "dad@adad.ru",
 				Username: "123",

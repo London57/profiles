@@ -1,4 +1,4 @@
-package interactors
+package get_by_email
 
 import (
 	"context"

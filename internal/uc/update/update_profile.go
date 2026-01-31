@@ -1,4 +1,4 @@
-package interactors
+package update
 
 import (
 	"context"
@@ -11,6 +11,12 @@ import (
 
 type ProfileUpdate struct {
 	repo repo.ProfilesRepo
+}
+
+func (ProfileUpdate) New(repo repo.ProfilesRepo) ProfileUpdate {
+	return ProfileUpdate{
+		repo: repo,
+	}
 }
 
 func (uc ProfileUpdate) Exec(ctx context.Context, req request.ProfileUpdateRequest) (response.ProfileUpdateResponse, error) {
@@ -46,11 +52,11 @@ func (uc ProfileUpdate) Exec(ctx context.Context, req request.ProfileUpdateReque
 		return response.ProfileUpdateResponse{}, err
 	}
 	resp := response.ProfileUpdateResponse{
-		Latutude: res.Latitude,
-		Longitude: res.Longitude,
-		Name: res.Name,
-		Birthday: res.Birthday,
-		Username: res.Username,
+		Latitude: &res.Latitude,
+		Longitude: &res.Longitude,
+		Name: &res.Name,
+		Birthday: &res.Birthday,
+		Username: &res.Username,
 	}
 
 	return resp, nil

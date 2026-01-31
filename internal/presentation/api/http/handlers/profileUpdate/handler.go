@@ -4,12 +4,12 @@ import (
 	"net/http"
 
 	"github.com/London57/profiles/internal/presentation/api/http/dtos/request"
-	interactors "github.com/London57/profiles/internal/uc"
+	update "github.com/London57/profiles/internal/uc/update"
 	"github.com/gin-gonic/gin"
 )
 
 type ProfileUpdateHandler struct {
-	update interactors.ProfileUpdate
+	update update.ProfileUpdate
 }
 
 func (handler ProfileUpdateHandler) UpdateProfile(r *gin.Context) {

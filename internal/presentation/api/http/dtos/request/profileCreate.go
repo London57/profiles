@@ -7,7 +7,7 @@ import (
 )
 
 type ProfileCreateRequest struct {
-	Latutude float32 `json:"latitude" binding:"required"`
+	Latitude float32 `json:"latitude" binding:"required"`
 	Longitude float32 `json:"longitude" binding:"required"`
 	Email string `json:"email" binding:"required,email"`
 	Username string `json:"username" binding:"required,min=6,max=30"`

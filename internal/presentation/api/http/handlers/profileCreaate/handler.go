@@ -5,14 +5,15 @@ import (
 	"net/http"
 
 	"github.com/London57/profiles/internal/presentation/api/http/dtos/request"
-	interactors "github.com/London57/profiles/internal/uc"
+	create "github.com/London57/profiles/internal/uc/create"
+	get_by_email "github.com/London57/profiles/internal/uc/get_by_email"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 )
 
 type ProfileCreateHandler struct {
-	create interactors.ProfileCreate
-	getByEmail interactors.GetProfileByEmail
+	create create.ProfileCreate
+	getByEmail get_by_email.GetProfileByEmail
 }
 
 func (handler ProfileCreateHandler) CreateProfile(r *gin.Context) {
@@ -40,19 +41,5 @@ func (handler ProfileCreateHandler) CreateProfile(r *gin.Context) {
 	r.JSON(http.StatusCreated, resp)
 }
 
-func (handler ProfileUpdateHandler) UpdateProfile(r *gin.Context) {
-	req := request.ProfileUpdateRequest{}
-	err := r.Bind(&req)
-	if err != nil {
-		r.JSON(http.StatusBadRequest, err)
-		return
-	}
 
-	resp, err := handler.update.Exec(r.Request.Context(), req)
-	if err != nil {
-		r.JSON(http.StatusInternalServerError, err)
-		return
-	}
-	r.JSON(http.StatusCreated, resp)
-}
 
