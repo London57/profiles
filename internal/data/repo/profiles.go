@@ -12,9 +12,6 @@ import (
 	"github.com/London57/profiles/internal/data/entities"
 )
 
-type BaseRepo struct {
-	pool *pgxpool.Pool
-}
 
 type ProfilesRepo struct {
 	pool *pgxpool.Pool
