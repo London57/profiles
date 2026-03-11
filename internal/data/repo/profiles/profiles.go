@@ -1,15 +1,17 @@
-package repo
+package profiles
 
 import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/London57/profiles/internal/data/entities"
+	"github.com/London57/profiles/internal/data/repo"
 )
 
 
@@ -17,8 +19,20 @@ type ProfilesRepo struct {
 	pool *pgxpool.Pool
 }
 
+func (ProfilesRepo) New(connstring string) (ProfilesRepo, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	pool, err := pgxpool.New(ctx, connstring)
+	if err != nil {
+		return ProfilesRepo{}, err
+	}
+	return ProfilesRepo{
+		pool: pool,
+	}, nil
+}
+
 func (r ProfilesRepo) CreateProfile(ctx context.Context, profile entities.ProfileEntity) (*entities.ProfileEntity, error) {	
-	stmt := fmt.Sprintf(`insert into %s (birthday, email, name, username, password, gender, longitude, latitude) values (?, ?, ?, ?, ?, ?, ?, ?)`, profilesDB)
+	stmt := fmt.Sprintf(`insert into %s (birthday, email, name, username, password, gender, longitude, latitude) values (?, ?, ?, ?, ?, ?, ?, ?) returning id, birthday, email, name, username, gender, longitude, latitude` , profilesDB)
 
 	res := entities.ProfileEntity{}
 
@@ -35,7 +49,6 @@ func (r ProfilesRepo) CreateProfile(ctx context.Context, profile entities.Profil
         &res.Email,
         &res.Name,
         &res.Username, 
-        &res.Password,
         &res.Gender,
         &res.Longitude,
         &res.Latitude,
@@ -52,26 +65,12 @@ func (r ProfilesRepo) CreateProfile(ctx context.Context, profile entities.Profil
 	return &res, nil
 }
 
-func (r ProfilesRepo) UpdateProfile(ctx context.Context, fields map[string]any) (*entities.ProfileEntity, error) {
-	values := make([]any, len(fields))
-	keys := make([]string, len(fields))
-	var result_string strings.Builder
-
-	for k, v := range fields {
-		values = append(values, v)
-		result_string.WriteString(k)
-		result_string.WriteByte('=')
-		result_string.WriteByte('?')
-		result_string.WriteString(", ")
-	}
-
-	values = append(values, fields["id"])
-	s := result_string.String()
-	result_string.Reset()
-	result_string.WriteString(s[:len(s)-2])
-	stmt := fmt.Sprintf("update %s set %s where id = ? returning %s", profilesDB, result_string.String(), strings.Join(keys, ", ")) // returning updated fields
+func (r ProfilesRepo) UpdateProfile(ctx context.Context, id uuid.UUID, fields map[string]any) (*entities.ProfileEntity, error) {
+	result_string, keys, values := repo.FieldsToExexString(fields)
+	stmt := fmt.Sprintf("update %s set %s where id = ? returning %s", profilesDB, result_string, strings.Join(keys, ", ")) // returning updated fields
 
 	updated_profile := entities.ProfileEntity{}
+	values = append(values, id)
 	row := r.pool.QueryRow(ctx, stmt, values...)
 
 	err := row.Scan(&updated_profile)
@@ -88,7 +87,7 @@ func (r ProfilesRepo) GetProfileIdByEmail(ctx context.Context, email string) (uu
 	var res uuid.UUID
 
 	row := r.pool.QueryRow(ctx, stmt, email)
-	err := row.Scan(res)
+	err := row.Scan(&res)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("database error: %w", err)
 	}
@@ -96,3 +95,6 @@ func (r ProfilesRepo) GetProfileIdByEmail(ctx context.Context, email string) (uu
 	return res, nil
 }
 
+func AddPreferences(ctx context.Context, fields map[string]any) error {
+	stmt := fmt.Sprintf("")
+}

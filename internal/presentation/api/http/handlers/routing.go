@@ -10,5 +10,5 @@ func InitRouter(app *gin.Engine, createHand create.ProfileCreateHandler, update 
 	profiles := app.Group("profiles")
 
 	profiles.POST("/registration", createHand.CreateProfile)
-	profiles.PATCH("/patch", update.UpdateProfile)
+	profiles.PATCH("/update_profile", update.UpdateProfile)
 }

@@ -3,12 +3,21 @@ package get_by_email
 import (
 	"context"
 
-	"github.com/London57/profiles/internal/interfaces/repo"
 	"github.com/google/uuid"
 )
 
+type repo interface {
+	GetProfileIdByEmail(context.Context, string) (uuid.UUID, error)
+}
+
 type GetProfileByEmail struct {
-	repo repo.ProfilesRepo
+	repo repo
+}
+
+func (GetProfileByEmail) NewGetProfileByEmail(repo repo) GetProfileByEmail {
+	return GetProfileByEmail{
+		repo: repo,
+	}
 }
 
 func (uc GetProfileByEmail) Exec(ctx context.Context, email string) (uuid.UUID, error) {

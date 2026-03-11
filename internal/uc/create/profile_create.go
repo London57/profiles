@@ -6,7 +6,6 @@ import (
 
 	"github.com/London57/profiles/internal/config"
 	"github.com/London57/profiles/internal/data/entities"
-	"github.com/London57/profiles/internal/interfaces/repo"
 	"github.com/London57/profiles/internal/presentation/api/http/dtos/request"
 	"github.com/London57/profiles/internal/presentation/api/http/dtos/response"
 	jwt "github.com/London57/profiles/pkg/jwtutil"
@@ -14,13 +13,17 @@ import (
 	"github.com/google/uuid"
 )
 
+type repo interface {
+	CreateProfile(context.Context, entities.ProfileEntity) (*entities.ProfileEntity, error)
+}
+
 type ProfileCreate struct {
-	repo repo.ProfilesRepo
+	repo repo
 	jwtConfig config.JWT
 	jwtutil jwt.JWT
 }
 
-func (ProfileCreate) NewProfleCreate(repo repo.ProfilesRepo, config config.JWT, jwtutil jwt.JWT) ProfileCreate {
+func (ProfileCreate) New(repo repo, config config.JWT, jwtutil jwt.JWT) ProfileCreate {
 	return ProfileCreate{
 		jwtConfig: config,
 		repo: repo,
@@ -42,7 +45,7 @@ func (uc ProfileCreate) Exec(ctx context.Context, r request.ProfileCreateRequest
 		Email: r.Email,
 		Username: r.Username,
 		Password: pswd,
-		Gender: r.Gender,
+		Gender: *r.Gender,
 		Longitude: r.Longitude,
 		Latitude: r.Latitude,
 	}

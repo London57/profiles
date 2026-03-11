@@ -1,4 +1,4 @@
-package tests
+package update
 
 import (
 	"context"
@@ -7,10 +7,8 @@ import (
 	"time"
 
 	"github.com/London57/profiles/internal/data/entities"
-	repo "github.com/London57/profiles/internal/interfaces/repo/mocks"
 	"github.com/London57/profiles/internal/presentation/api/http/dtos/request"
 	"github.com/London57/profiles/internal/presentation/api/http/dtos/response"
-	interactors "github.com/London57/profiles/internal/uc/update"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )

@@ -1,7 +1,8 @@
-package handlers
+package create
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/London57/profiles/internal/presentation/api/http/dtos/request"
@@ -16,20 +17,32 @@ type ProfileCreateHandler struct {
 	getByEmail get_by_email.GetProfileByEmail
 }
 
+func  (ProfileCreateHandler) NewProfleCreateHandler(create create.ProfileCreate, gbe get_by_email.GetProfileByEmail) ProfileCreateHandler {
+	return ProfileCreateHandler{
+		create: create,
+		getByEmail: gbe,
+	}
+}
+
+
 func (handler ProfileCreateHandler) CreateProfile(r *gin.Context) {
 	req := request.ProfileCreateRequest{}
 	err := r.Bind(&req)
 	if err != nil {
-		r.JSON(http.StatusBadRequest, err)
+		r.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("failed to parse JSON: %s", err.Error()),
+		})
 		return
 	}
 	_, err = handler.getByEmail.Exec(r.Request.Context(), req.Email)
-	if !errors.Is(err, pgx.ErrNoRows) {
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		r.JSON(http.StatusInternalServerError, err)
 		return
 	}
 	if err == nil {
-		r.JSON(http.StatusConflict, "user with this email already exists")
+		r.JSON(http.StatusConflict, gin.H{
+			"error": "user with this email already exists",
+		})
 		return
 	}
 

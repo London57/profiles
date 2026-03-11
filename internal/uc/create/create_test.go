@@ -1,4 +1,4 @@
-package tests
+package create
 
 import (
 	"context"
@@ -8,17 +8,21 @@ import (
 	"time"
 
 	"github.com/London57/profiles/internal/config"
+	"github.com/London57/profiles/internal/consts"
 	"github.com/London57/profiles/internal/data/entities"
-	repo "github.com/London57/profiles/internal/interfaces/repo/mocks"
+	"github.com/London57/profiles/internal/interfaces/repo/mocks"
 	"github.com/London57/profiles/internal/presentation/api/http/dtos/request"
 	"github.com/London57/profiles/internal/presentation/api/http/dtos/response"
-	interactors "github.com/London57/profiles/internal/uc/create"
+	create_uc "github.com/London57/profiles/internal/uc/create"
 	mock_jwtutil "github.com/London57/profiles/pkg/jwtutil/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
+func Ptr[T any](v T) *T {
+	return &v
+}
 
 func TestCreate(t *testing.T) {
 	tcs := []struct{
@@ -35,7 +39,7 @@ func TestCreate(t *testing.T) {
 				Longitude: 16,
 				Email: "dad@adad.ru",
 				Username: "123",
-				Gender: 0,
+				Gender: Ptr[consts.Gender](0),
 				Birthday: time.Date(1998, 6, 13, 3, 2, 0, 0, time.UTC),
 				Name: "123sdfs",
 				Password: "12313",
@@ -63,7 +67,7 @@ func TestCreate(t *testing.T) {
 				Longitude: 16,
 				Email: "dad@adad.ru",
 				Username: "123",
-				Gender: 0,
+				Gender: Ptr[consts.Gender](0),
 				Birthday: time.Date(1998, 6, 13, 3, 2, 0, 0, time.UTC),
 				Name: "123sdfs",
 				Password: "12313",
@@ -91,7 +95,7 @@ func TestCreate(t *testing.T) {
 			defer ctrl.Finish()
 
 			repo, jwt := tc.setup(ctrl)
-			uc := interactors.ProfileCreate{}.NewProfleCreate(repo, config.JWT{}, jwt)
+			uc := create_uc.ProfileCreate{}.NewProfleCreate(repo, config.JWT{}, jwt)
 
 			ctx := context.Background()
 			res, err := uc.Exec(ctx, tc.req)

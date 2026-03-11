@@ -1,4 +1,4 @@
-package repo
+package profiles
 
 const (
 	profilesDB = "profiles"

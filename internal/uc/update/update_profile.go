@@ -4,16 +4,21 @@ import (
 	"context"
 	"time"
 
-	"github.com/London57/profiles/internal/interfaces/repo"
+	"github.com/London57/profiles/internal/data/entities"
 	"github.com/London57/profiles/internal/presentation/api/http/dtos/request"
 	"github.com/London57/profiles/internal/presentation/api/http/dtos/response"
+	"github.com/google/uuid"
 )
 
-type ProfileUpdate struct {
-	repo repo.ProfilesRepo
+type repo interface {
+	UpdateProfile(context.Context, uuid.UUID, map[string]any) (*entities.ProfileEntity, error)
 }
 
-func (ProfileUpdate) New(repo repo.ProfilesRepo) ProfileUpdate {
+type ProfileUpdate struct {
+	repo repo
+}
+
+func (ProfileUpdate) New(repo repo) ProfileUpdate {
 	return ProfileUpdate{
 		repo: repo,
 	}
@@ -47,7 +52,7 @@ func (uc ProfileUpdate) Exec(ctx context.Context, req request.ProfileUpdateReque
 	if latitude != 0 {
 		fields["latitude"] = latitude
 	}
-	res, err := uc.repo.UpdateProfile(ctx, fields)
+	res, err := uc.repo.UpdateProfile(ctx, req.ID, fields)
 	if err != nil {
 		return response.ProfileUpdateResponse{}, err
 	}
