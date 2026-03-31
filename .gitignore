@@ -1,1 +1,3 @@
 mocks/
+.env
+swagger.conf
