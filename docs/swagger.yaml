@@ -1,0 +1,161 @@
+openapi: 3.1.0
+info:
+  title: tinder
+  version: 1.0.0
+
+tags:
+  - name: profiles
+
+paths:
+  /profiles/registration:
+    post: 
+      summary: registration and get jwt tokens
+      requestBody: 
+        content: 
+          application/json: 
+            schema:
+              type: object
+              properties: 
+                longitude:
+                  type: number
+                  format: float
+                latitude:
+                  type: number
+                  format: float
+                email:
+                  type: string
+                  format: idn-email
+                username:
+                  type: string
+                  minLength: 6
+                  maxLength: 30
+                gender:
+                  type: integer
+                  enum: 
+                    - 0
+                    - 1
+                birthday:
+                  type: string
+                  format: date-time
+                name:
+                  type: string
+                  maxLength: 30
+                password:
+                  type: string
+                  minLength: 6
+                  maxLength: 30
+              required: 
+                - longitude
+                - latitude
+                - email
+                - username
+                - gender
+                - birthday
+                - name
+                - password
+      responses: 
+        "201":
+          description: created
+          content:
+            application/json: 
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: user's uuid
+                  access_token:
+                    type: string
+                    description: jwt access token
+                  refresh_token:
+                    type: string
+                    description: jwt refresh token
+                required:
+                  - id
+                  - access_token
+                  - refresh_token
+        "400":
+          description: failed to parse json
+          content:
+            application/json: 
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        "500":
+          description: internal server error
+          content:
+            application/json: 
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        "409":
+          description: conflict. user with this email already exists
+          content:
+            application/json: 
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /profiles/update_profile:  
+    patch:
+      summary: update  user info
+      requestBody: 
+        content: 
+          application/json: 
+            schema: 
+              type: object
+              properties: 
+                id:
+                  type: string
+                  description: uuid
+                username:
+                  type: string
+                  minLength: 6
+                  maxLength: 30
+                longitude:
+                  type: number
+                  format: float
+                latitude:
+                  type: number
+                  format: float 
+                birthday:
+                  type: string
+                  format: date-time
+                name:
+                  type: string
+                  maxLength: 30
+              required:
+                - id
+      responses:
+        "200": 
+          description: OK
+          content:
+            application/json: 
+              schema:
+                type: object
+                properties:
+
+                 
+        "400":
+          description: failed to parse json
+          content:
+            application/json: 
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        "500":
+          description: internal server error
+          content:
+            application/json: 
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
