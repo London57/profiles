@@ -5,10 +5,10 @@ export PROJECT_ROOT=$(shell pwd)
 
 
 pg-up:
-	@docker-compose up app-postges
+	@docker compose up app-postgres
 
 pg-down:
-	@docker-compose down app-postges
+	@docker compose down app-postgres
 
 pg-cleanup:
 	@read -p "Очистить все volume файлы окружения? [y/N]: " ans; \
@@ -19,6 +19,12 @@ pg-cleanup:
 	else \
 		echo "Очистка окружения отменена"; \
 	fi
+
+pg-port-forward:
+	@docker compose up -d port-forwarder
+
+pg-port-close:
+	@docker compose down port-forwarder
 
 migrate-create:
 	@if [ -z "$(seq)" ]; then \
