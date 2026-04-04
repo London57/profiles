@@ -4,6 +4,12 @@ export
 export PROJECT_ROOT=$(shell pwd)
 
 
+init-postgres-env:
+	@cd .. && \
+	mkdir -p "out/pgdata"; && \
+	sudo chown -R 999:999 "out/pgdata"; &&\
+	sudo chmod -R 700 "out/pgdata"; &&\
+	
 pg-up:
 	@docker compose up app-postgres
 
@@ -14,7 +20,8 @@ pg-cleanup:
 	@read -p "Очистить все volume файлы окружения? [y/N]: " ans; \
 	if ["$$ans" = "y"]; then \
 		docker-compose down app-postges && \
-		rm -rf out/pgdata; \
+		cd .. && \
+		rm -rf ../out/pgdata; \
 		echo "Файлы окружения очищены"; \
 	else \
 		echo "Очистка окружения отменена"; \
