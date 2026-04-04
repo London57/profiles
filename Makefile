@@ -21,7 +21,7 @@ pg-cleanup:
 	if ["$$ans" = "y"]; then \
 		docker-compose down app-postges && \
 		cd .. && \
-		rm -rf ../out/pgdata; \
+		rm -rf out/pgdata; \
 		echo "Файлы окружения очищены"; \
 	else \
 		echo "Очистка окружения отменена"; \
