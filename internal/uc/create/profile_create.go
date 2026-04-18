@@ -43,9 +43,10 @@ func (uc ProfileCreate) Exec(ctx context.Context, r request.ProfileCreateRequest
 		Name: r.Name,
 		Birthday: r.Birthday,
 		Email: r.Email,
+		Phone_number: r.Phone_number,
 		Username: r.Username,
 		Password: pswd,
-		Gender: *r.Gender,
+		Gender: r.Gender,
 		Longitude: r.Longitude,
 		Latitude: r.Latitude,
 	}

@@ -25,7 +25,6 @@ func (ProfileUpdate) New(repo repo) ProfileUpdate {
 }
 
 func (uc ProfileUpdate) Exec(ctx context.Context, req request.ProfileUpdateRequest) (response.ProfileUpdateResponse, error) {
-	
 	fields := make(map[string]any, 2)
 
 	username := req.Username
@@ -52,6 +51,11 @@ func (uc ProfileUpdate) Exec(ctx context.Context, req request.ProfileUpdateReque
 	if latitude != 0 {
 		fields["latitude"] = latitude
 	}
+
+	phone := req.Phone_number
+	if phone != "" {
+		fields["phone_number"] = phone
+	}
 	res, err := uc.repo.UpdateProfile(ctx, req.ID, fields)
 	if err != nil {
 		return response.ProfileUpdateResponse{}, err
@@ -60,6 +64,7 @@ func (uc ProfileUpdate) Exec(ctx context.Context, req request.ProfileUpdateReque
 		Latitude: &res.Latitude,
 		Longitude: &res.Longitude,
 		Name: &res.Name,
+		Phone_number: &res.Phone_number,
 		Birthday: &res.Birthday,
 		Username: &res.Username,
 	}

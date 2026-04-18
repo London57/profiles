@@ -7,6 +7,7 @@ func FieldsToExexString(fields map[string]any) (string, []string, []any) {
 	keys := make([]string, len(fields))
 	var result_string strings.Builder
 
+	// key1=?, key2=?
 	for k, v := range fields {
 		values = append(values, v)
 		keys = append(keys, k)
@@ -20,4 +21,15 @@ func FieldsToExexString(fields map[string]any) (string, []string, []any) {
 	result_string.Reset()
 	result_string.WriteString(s[:len(s)-2])
 	return result_string.String(), keys, values
+}
+
+func Question_marks(l int) string {
+	var sb strings.Builder
+	for range l {
+		sb.WriteString("?, ")
+	}
+	s := sb.String()
+	sb.Reset()
+	sb.WriteString(s[:len(s)-2])
+	return sb.String()
 }

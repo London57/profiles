@@ -2,6 +2,9 @@ package profiles
 
 import (
 	"context"
+	"crypto/rand"
+	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -32,7 +35,7 @@ func (ProfilesRepo) New(connstring string) (ProfilesRepo, error) {
 }
 
 func (r ProfilesRepo) CreateProfile(ctx context.Context, profile entities.ProfileEntity) (*entities.ProfileEntity, error) {	
-	stmt := fmt.Sprintf(`insert into %s (birthday, email, name, username, password, gender, longitude, latitude) values (?, ?, ?, ?, ?, ?, ?, ?) returning id, birthday, email, name, username, gender, longitude, latitude` , profilesDB)
+	stmt := fmt.Sprintf(`insert into %s (birthday, email, name, username, password, gender, longitude, latitude, phone_number) values (?, ?, ?, ?, ?, ?, ?, ?, ?) returning id, birthday, email, name, username, gender, longitude, latitude, phone_number` , profilesTable)
 
 	res := entities.ProfileEntity{}
 
@@ -40,7 +43,7 @@ func (r ProfilesRepo) CreateProfile(ctx context.Context, profile entities.Profil
 		Time: profile.Birthday,
 		Valid: true,
 	}
-	row := r.pool.QueryRow(ctx, stmt, birthday, profile.Email, profile.Name, profile.Username, profile.Password, profile.Gender, profile.Longitude, profile.Latitude)
+	row := r.pool.QueryRow(ctx, stmt, birthday, profile.Email, profile.Name, profile.Username, profile.Password, profile.Gender, profile.Longitude, profile.Latitude, profile.Phone_number)
 
 	var pgBirthday pgtype.Date
 	err := row.Scan(
@@ -52,6 +55,7 @@ func (r ProfilesRepo) CreateProfile(ctx context.Context, profile entities.Profil
         &res.Gender,
         &res.Longitude,
         &res.Latitude,
+		&res.Phone_number,
 	)
 
 	if err != nil {
@@ -67,7 +71,7 @@ func (r ProfilesRepo) CreateProfile(ctx context.Context, profile entities.Profil
 
 func (r ProfilesRepo) UpdateProfile(ctx context.Context, id uuid.UUID, fields map[string]any) (*entities.ProfileEntity, error) {
 	result_string, keys, values := repo.FieldsToExexString(fields)
-	stmt := fmt.Sprintf("update %s set %s where id = ? returning %s", profilesDB, result_string, strings.Join(keys, ", ")) // returning updated fields
+	stmt := fmt.Sprintf("update %s set %s where id = ? returning %s", profilesTable, result_string, strings.Join(keys, ", ")) // returning updated fields
 
 	updated_profile := entities.ProfileEntity{}
 	values = append(values, id)
@@ -82,7 +86,7 @@ func (r ProfilesRepo) UpdateProfile(ctx context.Context, id uuid.UUID, fields ma
 }
 
 func (r ProfilesRepo) GetProfileIdByEmail(ctx context.Context, email string) (uuid.UUID, error) {
-	stmt := fmt.Sprintf("select id from %s where email=?", profilesDB)
+	stmt := fmt.Sprintf("select id from %s where email=?", profilesTable)
 
 	var res uuid.UUID
 
@@ -95,6 +99,18 @@ func (r ProfilesRepo) GetProfileIdByEmail(ctx context.Context, email string) (uu
 	return res, nil
 }
 
-func AddPreferences(ctx context.Context, fields map[string]any) error {
-	stmt := fmt.Sprintf("")
+func (r ProfilesRepo) AddPreferences(ctx context.Context, fields map[string]any) (entities.Preferences, error) {
+	_, keys, values := repo.FieldsToExexString(fields)
+
+	keys_str := strings.Join(keys, ", ")
+	stmt := fmt.Sprintf("insert into %s (%s) values %s returning %s", preferencesTable, keys_str, repo.Question_marks(len(keys)), keys_str)
+
+	var res entities.Preferences
+	row := r.pool.QueryRow(ctx, stmt, values...)
+	err := row.Scan(&res)
+	if err != nil {
+		return entities.Preferences{}, fmt.Errorf("database error: %w", err)
+	}
+
+	return res, nil
 }

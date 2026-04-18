@@ -9,6 +9,7 @@ tags:
 paths:
   /profiles/registration:
     post: 
+      tags: [profiles]
       summary: registration and get jwt tokens
       requestBody: 
         content: 
@@ -103,6 +104,7 @@ paths:
                     type: string
   /profiles/update_profile:  
     patch:
+      tags: [profiles]
       summary: update  user info
       requestBody: 
         content: 
@@ -139,8 +141,22 @@ paths:
               schema:
                 type: object
                 properties:
-
-                 
+                  username:
+                    type: string
+                    minLength: 6
+                    maxLength: 30
+                  longitude:
+                    type: number
+                    format: float
+                  latitude:
+                    type: number
+                    format: float 
+                  birthday:
+                    type: string
+                    format: date-time
+                  name:
+                    type: string
+                    maxLength: 30
         "400":
           description: failed to parse json
           content:
@@ -159,3 +175,38 @@ paths:
                 properties:
                   error:
                     type: string
+
+components:
+  schemas:
+    ProfileEntity:
+      id:
+        type: string
+        description: uuid
+      longitude:
+        type: number
+        format: float
+      latitude:
+        type: number
+        format: float
+      email:
+        type: string
+        format: idn-email
+      username:
+        type: string
+        minLength: 6
+        maxLength: 30
+      gender:
+        type: integer
+        enum: 
+          - 0
+          - 1
+      birthday:
+        type: string
+        format: date-time
+      name:
+        type: string
+        maxLength: 30
+      password:
+        type: string
+        minLength: 6
+        maxLength: 30

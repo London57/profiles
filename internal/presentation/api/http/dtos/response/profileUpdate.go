@@ -10,4 +10,5 @@ type ProfileUpdateResponse struct {
 	Birthday  *time.Time `json:"birthday,omitempty"`
 	Username  *string `json:"username,omitempty"`
 	Name      *string  `json:"name,omitempty"`
+	Phone_number *string `json:"phone_number,omitempty"`
 }

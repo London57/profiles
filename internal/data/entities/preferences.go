@@ -6,6 +6,5 @@ import (
 
 type Preferences struct {
 	Birthday   time.Time
-	Longitude  float32
-	Latitude   float32
+	Radius int16
 }

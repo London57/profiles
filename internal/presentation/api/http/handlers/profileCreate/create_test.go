@@ -108,7 +108,7 @@ func TestCreate(t *testing.T) {
 
 			repo, jwt := tc.setup(ctrl)
 
-			create_uc := create.ProfileCreate{}.NewProfleCreate(repo, config.JWT{}, jwt)
+			create_uc := create.ProfileCreate{}.New(repo, config.JWT{}, jwt)
 			get_by_email_uc := get_by_email.GetProfileByEmail{}.NewGetProfileByEmail(repo)
 			handler := ProfileCreateHandler{}.NewProfleCreateHandler(create_uc, get_by_email_uc)
 

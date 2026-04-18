@@ -25,6 +25,6 @@ func (handler ProfileUpdateHandler) UpdateProfile(r *gin.Context) {
 		r.JSON(http.StatusInternalServerError, err)
 		return
 	}
-	r.JSON(http.StatusCreated, resp)
+	r.JSON(http.StatusOK, resp)
 }
 

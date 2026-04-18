@@ -1,6 +1,6 @@
 package profiles
 
 const (
-	profilesDB = "profiles"
-	preferencesDB = "preferences"
+	profilesTable = "profiles"
+	preferencesTable = "preferences"
 )
