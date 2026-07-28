@@ -1,4 +1,4 @@
-package update
+package uc_update
 
 import (
 	"context"

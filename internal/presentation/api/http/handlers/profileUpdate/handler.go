@@ -1,4 +1,4 @@
-package handlers
+package update
 
 import (
 	"net/http"
@@ -7,6 +7,12 @@ import (
 	update "github.com/London57/profiles/internal/uc/update"
 	"github.com/gin-gonic/gin"
 )
+
+func (ProfileUpdateHandler) New(update update.ProfileUpdate) ProfileUpdateHandler {
+	return ProfileUpdateHandler{
+		update: update,
+	}
+}
 
 type ProfileUpdateHandler struct {
 	update update.ProfileUpdate

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exaring/otelpgx"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -24,11 +25,21 @@ type ProfilesRepo struct {
 
 func (ProfilesRepo) New(connstring string) (ProfilesRepo, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	
 	defer cancel()
-	pool, err := pgxpool.New(ctx, connstring)
+	cfg, err := pgxpool.ParseConfig(connstring)
+
 	if err != nil {
 		return ProfilesRepo{}, err
 	}
+	cfg.ConnConfig.Tracer = otelpgx.NewTracer()
+
+	pool, err := pgxpool.NewWithConfig(ctx, cfg)
+
+	if err != nil {
+		return ProfilesRepo{}, err
+	}
+	
 	return ProfilesRepo{
 		pool: pool,
 	}, nil

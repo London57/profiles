@@ -14,6 +14,12 @@ type GetProfileByEmail struct {
 	repo repo
 }
 
+func (GetProfileByEmail) New(repo repo) GetProfileByEmail {
+	return GetProfileByEmail{
+		repo: repo,
+	}
+}
+ 
 func (GetProfileByEmail) NewGetProfileByEmail(repo repo) GetProfileByEmail {
 	return GetProfileByEmail{
 		repo: repo,

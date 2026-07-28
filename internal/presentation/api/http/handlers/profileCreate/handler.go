@@ -17,13 +17,12 @@ type ProfileCreateHandler struct {
 	getByEmail get_by_email.GetProfileByEmail
 }
 
-func  (ProfileCreateHandler) NewProfleCreateHandler(create create.ProfileCreate, gbe get_by_email.GetProfileByEmail) ProfileCreateHandler {
+func (ProfileCreateHandler) New(create create.ProfileCreate, gbe get_by_email.GetProfileByEmail) ProfileCreateHandler {
 	return ProfileCreateHandler{
 		create: create,
 		getByEmail: gbe,
 	}
 }
-
 
 func (handler ProfileCreateHandler) CreateProfile(r *gin.Context) {
 	req := request.ProfileCreateRequest{}

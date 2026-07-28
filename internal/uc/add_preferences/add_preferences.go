@@ -1,4 +1,4 @@
-package add_preferences
+package uc_add_preferences
 
 import (
 	"context"

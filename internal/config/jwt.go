@@ -1,8 +1,32 @@
 package config
 
-type JWT struct {
-	AccessTokenExpiryHour  int    `toml:"access_token_expiry_hour"`
-	RefreshTokenExpiryHour int    `toml:"refresh_token_expiry_hour"`
-	AccessTokenSecret      string `toml:"access_token_secret"`
-	RefreshTokenSecret     string `toml:"refresh_token_secret"`
+import (
+	"fmt"
+	"os"
+	"strconv"
+)
+
+type JwtConfig struct {
+	AccessTokenExpiryHour  int
+	RefreshTokenExpiryHour int
+	AccessTokenSecret      string
+	RefreshTokenSecret     string
+}
+
+func GetJwtConfig() JwtConfig {
+	p1, err := strconv.Atoi(os.Getenv("AccessTokenExpiryHour"))
+	if err != nil {
+		panic(fmt.Sprintf("failed to parse jwt config: %v", err))
+	}
+	p2, err := strconv.Atoi(os.Getenv("RefreshTokenExpiryHour"))
+	if err != nil {
+		panic(fmt.Sprintf("failed to parse jwt config: %v", err))
+	}
+
+	return JwtConfig{
+		AccessTokenExpiryHour: p1,
+		RefreshTokenExpiryHour: p2,
+		AccessTokenSecret: os.Getenv("AccessTokenSecret"),
+		RefreshTokenSecret: os.Getenv("RefreshTokenSecret"),
+	}
 }

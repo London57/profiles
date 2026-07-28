@@ -9,7 +9,15 @@ import (
 	"github.com/google/uuid"
 )
 
-func CreateAccessToken(id uuid.UUID, username string, secret string, expiry int) (string, error) {
+
+type Jwt interface {
+	CreateAccessToken(id uuid.UUID, username string, secret string, expiry int) (string, error)
+	CreateRefreshToken(id uuid.UUID, name string, secret string, expiry int) (string, error)
+}
+
+type JwtImpl struct {}
+
+func (j JwtImpl) CreateAccessToken(id uuid.UUID, username string, secret string, expiry int) (string, error) {
 	exp := time.Now().Add(time.Hour * time.Duration(expiry))
 	claims := &JwtCustomClaims{
 		ID:       id,
@@ -26,7 +34,7 @@ func CreateAccessToken(id uuid.UUID, username string, secret string, expiry int)
 	return t, nil
 }
 
-func CreateRefreshToken(id uuid.UUID, name string, secret string, expiry int) (string, error) {
+func (j JwtImpl) CreateRefreshToken(id uuid.UUID, name string, secret string, expiry int) (string, error) {
 	exp := time.Now().Add(time.Hour * time.Duration(expiry))
 	claimsRefresh := &JwtCustomRefreshClaims{
 		ID: id,
@@ -79,8 +87,3 @@ func ExtractIDFromToken(requestToken string, secret string) (string, error) {
 	return claims["id"].(string), nil
 }
 
-
-type JWT interface {
-	CreateAccessToken(id uuid.UUID, username string, secret string, expiry int) (string, error)
-	CreateRefreshToken(id uuid.UUID, name string, secret string, expiry int) (string, error)
-}

@@ -1,4 +1,4 @@
-package tests
+package update
 	// expectResponseBody: fmt.Sprintf(`"id": %s,
 			// 		"latitude": 14.01,
 			// 		"longitude": 16,

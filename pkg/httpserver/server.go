@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/gin-gonic/gin"
 )
 
 const (
@@ -16,6 +17,7 @@ const (
 )
 
 type Server struct {
+	App *gin.Engine
 	HTTPServer *http.Server
 	notify     chan error
 
@@ -29,6 +31,7 @@ type Server struct {
 func New(opts ...Option) *Server {
 	s := &Server{
 		HTTPServer:      nil,
+		App: &gin.Engine{},
 		notify:          make(chan error, 1),
 		address:         _defautlAddr,
 		readTimeout:     _defaultReadTimout,
