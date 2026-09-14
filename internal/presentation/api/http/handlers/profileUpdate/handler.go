@@ -3,6 +3,7 @@ package update
 import (
 	"net/http"
 
+	"github.com/London57/profiles/internal/data/datagen"
 	"github.com/London57/profiles/internal/presentation/api/http/dtos/request"
 	update "github.com/London57/profiles/internal/uc/update"
 	"github.com/gin-gonic/gin"
@@ -18,8 +19,17 @@ type ProfileUpdateHandler struct {
 	update update.ProfileUpdate
 }
 
+// @Summary UpdateProfile
+// @Tags Profiles
+// @Accept json
+// @Produce json
+// @Param request body datagen.UpdateProfileParams true "Record to update" 
+// @Success 200 {object} any "Record updated successfully"
+// @Failure 400 {object} map[string]interface{} "Invalid request body"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /auth-profiles/update [patch]
 func (handler ProfileUpdateHandler) UpdateProfile(r *gin.Context) {
-	req := request.ProfileUpdateRequest{}
+	req := datagen.UpdateProfileParams{}
 	err := r.Bind(&req)
 	if err != nil {
 		r.JSON(http.StatusBadRequest, err)

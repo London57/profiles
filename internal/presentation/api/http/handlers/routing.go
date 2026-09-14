@@ -1,14 +1,21 @@
 package handlers
 
 import (
-	create "github.com/London57/profiles/internal/presentation/api/http/handlers/profileCreaate"
+	"github.com/London57/jwt-auth/middleware"
+	create "github.com/London57/profiles/internal/presentation/api/http/handlers/profileCreate"
 	update "github.com/London57/profiles/internal/presentation/api/http/handlers/profileUpdate"
 	"github.com/gin-gonic/gin"
 )
 
-func InitRouter(app *gin.Engine, createHand create.ProfileCreateHandler, update update.ProfileUpdateHandler) {
+func InitRouter(app *gin.Engine, createHand create.ProfileCreateHandler, update update.ProfileUpdateHandler, secret string) {
 	profiles := app.Group("profiles")
 
-	profiles.POST("/registration", createHand.CreateProfile)
-	profiles.PATCH("/update_profile", update.UpdateProfile)
+	auth_profiles := app.Group("auth-profiles")
+
+	jwt_middleware := middleware.JwtAuthMiddleware(secret)
+
+	auth_profiles.Use(jwt_middleware)
+	
+	profiles.POST("/create", createHand.CreateProfile)
+	auth_profiles.PATCH("/update", update.UpdateProfile)
 }

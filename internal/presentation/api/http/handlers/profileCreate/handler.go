@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/London57/profiles/internal/data/datagen"
 	"github.com/London57/profiles/internal/presentation/api/http/dtos/request"
 	create "github.com/London57/profiles/internal/uc/create"
 	get_by_email "github.com/London57/profiles/internal/uc/get_by_email"
@@ -24,8 +25,18 @@ func (ProfileCreateHandler) New(create create.ProfileCreate, gbe get_by_email.Ge
 	}
 }
 
+// @Summary CreateProfile
+// @Tags Profiles
+// @Accept json
+// @Produce json
+// @Param request body datagen.CreateProfileParams true "Record to create" 
+// @Success 201 {object} any "Record created successfully"
+// @Failure 400 {object} map[string]interface{} "Invalid request body"
+// @Failure 409 {object} map[string]interface{} "user with this email already exists"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /profiles/create [patch]
 func (handler ProfileCreateHandler) CreateProfile(r *gin.Context) {
-	req := request.ProfileCreateRequest{}
+	req := datagen.CreateProfileParams{}
 	err := r.Bind(&req)
 	if err != nil {
 		r.JSON(http.StatusBadRequest, gin.H{

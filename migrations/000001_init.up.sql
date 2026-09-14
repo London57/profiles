@@ -16,6 +16,7 @@ create table social.profiles(
 	gender smallint
 	longitude real 
 	latitude real
+	like_ttl smallint not null default 7 check (between 1 and 30)
 );
 
 
@@ -26,3 +27,12 @@ create table social.preferences(
 	latitude real
 );
 
+create type reaction_type as enum ("like", "dislike")
+
+create table social.reactions(
+	id uuid primary key default gen_random_uuid()
+	source uuid references social.profiles(id) on delete cascade
+	destination uuid references social.profiles(id) on delete cascade
+	reaction reaction_type not null
+	expires_at timestamp not null /* user_like_ttl+time.now() */
+);

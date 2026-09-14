@@ -1,14 +1,14 @@
 package response
 
 import (
-	"time"
+	"gopkg.in/guregu/null.v4"
 )
 
 type ProfileUpdateResponse struct {
-	Latitude  *float32 `json:"latitude,omitempty"`
-	Longitude *float32 `json:"longitude,omitempty"`
-	Birthday  *time.Time `json:"birthday,omitempty"`
-	Username  *string `json:"username,omitempty"`
-	Name      *string  `json:"name,omitempty"`
-	Phone_number *string `json:"phone_number,omitempty"`
+	Latitude  null.Float `json:"latitude"`
+	Longitude null.Float `json:"longitude"`
+	Birthday  null.Float `json:"birthday"`
+	Username  null.String `json:"username"`
+	Name      null.String  `json:"name"`
+	Phone_number null.String `json:"phone_number"`
 }

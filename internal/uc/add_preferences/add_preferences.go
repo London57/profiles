@@ -2,15 +2,13 @@ package uc_add_preferences
 
 import (
 	"context"
-	"time"
 
-	"github.com/London57/profiles/internal/data/entities"
-	"github.com/London57/profiles/internal/presentation/api/http/dtos/request"
+	"github.com/London57/profiles/internal/data/datagen"
 	"github.com/London57/profiles/internal/presentation/api/http/dtos/response"
 )
 
 type repo interface {
-	AddPreferences(context.Context, map[string]any) (entities.Preferences, error)
+	AddPreferences(context.Context, datagen.UpdatePreferencesParams) (datagen.SocialPreference, error)
 }
 
 type AddPreferences struct {
@@ -23,28 +21,15 @@ func (AddPreferences) New(repo repo) AddPreferences{
 	}
 }
 
-func (uc AddPreferences) Exec(ctx context.Context, req request.AddPreferencesRequest) (response.AddPreferencesResponse, error) {
-	fields := make(map[string]any, 2)
-
-	fields["profile_id"] = req.ID
-
-	birthday := req.Birthday
-	if birthday != (time.Time{}) {
-		fields["birthday"] = birthday
-	}
-	
-	raduis := req.Raduis
-	if raduis != 0 {
-		fields["radius"] = raduis
-	}
-
-	preferences, err := uc.repo.AddPreferences(ctx, fields)
+func (uc AddPreferences) Exec(ctx context.Context, data datagen.UpdatePreferencesParams) (response.AddPreferencesResponse, error) {
+	preferences, err := uc.repo.AddPreferences(ctx, data)
 	if err != nil {
 		return response.AddPreferencesResponse{}, err
 	}
 
 	return response.AddPreferencesResponse{
-		Birthday: &preferences.Birthday,
-		Raduis: &preferences.Radius,
+		AgeTo: preferences.AgeTo,
+		AgeFrom: preferences.AgeFrom,
+		Raduis: preferences.Raduis,
 	}, nil
 }

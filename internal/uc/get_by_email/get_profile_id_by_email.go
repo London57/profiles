@@ -1,7 +1,8 @@
-package get_by_email
+package uc_get_by_email
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -19,7 +20,8 @@ func (GetProfileByEmail) New(repo repo) GetProfileByEmail {
 		repo: repo,
 	}
 }
- 
+
+
 func (GetProfileByEmail) NewGetProfileByEmail(repo repo) GetProfileByEmail {
 	return GetProfileByEmail{
 		repo: repo,

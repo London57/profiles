@@ -1,8 +1,11 @@
 package response
 
-import "time"
+import (
+	"gopkg.in/guregu/null.v4"
+)
 
 type AddPreferencesResponse struct {
-	Birthday *time.Time `json:"birthday,omitempty"`
-	Raduis   *int16     `json:"radius,omitempty"`
-}
+	AgeTo null.Int `json:"age_to"` 
+	AgeFrom null.Int `json:"age_from"` 
+	Raduis   null.Int     `json:"radius"`
+} 	

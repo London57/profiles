@@ -2,16 +2,12 @@ package uc_update
 
 import (
 	"context"
-	"time"
 
-	"github.com/London57/profiles/internal/data/entities"
-	"github.com/London57/profiles/internal/presentation/api/http/dtos/request"
-	"github.com/London57/profiles/internal/presentation/api/http/dtos/response"
-	"github.com/google/uuid"
+	"github.com/London57/profiles/internal/data/datagen"
 )
 
 type repo interface {
-	UpdateProfile(context.Context, uuid.UUID, map[string]any) (*entities.ProfileEntity, error)
+	UpdateProfile(context.Context, datagen.UpdateProfileParams) (datagen.SocialProfile, error)
 }
 
 type ProfileUpdate struct {
@@ -24,50 +20,11 @@ func (ProfileUpdate) New(repo repo) ProfileUpdate {
 	}
 }
 
-func (uc ProfileUpdate) Exec(ctx context.Context, req request.ProfileUpdateRequest) (response.ProfileUpdateResponse, error) {
-	fields := make(map[string]any, 2)
-
-	username := req.Username
-	if username != "" {
-		fields["username"] = username
-	}
-
-	name := req.Name
-	if name != "" {
-		fields["name"] = name
-	}
-
-	birthday := req.Birthday
-	if birthday != (time.Time{}) {
-		fields["birthday"] = birthday
-	}
-
-	longitude := req.Longitude
-	if longitude != 0 {
-		fields["longitude"] = longitude
-	}
-
-	latitude := req.Latitude
-	if latitude != 0 {
-		fields["latitude"] = latitude
-	}
-
-	phone := req.Phone_number
-	if phone != "" {
-		fields["phone_number"] = phone
-	}
-	res, err := uc.repo.UpdateProfile(ctx, req.ID, fields)
+func (uc ProfileUpdate) Exec(ctx context.Context, data datagen.UpdateProfileParams) (datagen.SocialProfile, error) {
+	profile, err := uc.repo.UpdateProfile(ctx, data)
 	if err != nil {
-		return response.ProfileUpdateResponse{}, err
-	}
-	resp := response.ProfileUpdateResponse{
-		Latitude: &res.Latitude,
-		Longitude: &res.Longitude,
-		Name: &res.Name,
-		Phone_number: &res.Phone_number,
-		Birthday: &res.Birthday,
-		Username: &res.Username,
+		return datagen.SocialProfile{}, err
 	}
 
-	return resp, nil
+	return profile, nil
 }

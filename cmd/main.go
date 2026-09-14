@@ -1,13 +1,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/London57/jwt-auth/jwtutil"
 	"github.com/London57/profiles/internal/config"
-	"github.com/London57/profiles/internal/data/repo/profiles"
+	"github.com/London57/profiles/internal/data/datagen"
+	"github.com/London57/profiles/internal/data/postgres"
 	"github.com/London57/profiles/internal/presentation/api/http/handlers"
 	create "github.com/London57/profiles/internal/presentation/api/http/handlers/profileCreate"
 	update "github.com/London57/profiles/internal/presentation/api/http/handlers/profileUpdate"
@@ -15,7 +19,6 @@ import (
 	uc_get_by_email "github.com/London57/profiles/internal/uc/get_by_email"
 	uc_update "github.com/London57/profiles/internal/uc/update"
 	"github.com/London57/profiles/pkg/httpserver"
-	"github.com/London57/profiles/pkg/jwtutil"
 	"go.uber.org/zap"
 )
 
@@ -28,17 +31,17 @@ func main() {
 
 	dsn := fmt.Sprintf("postgresql://%s:%s@postgres:5432/profiles?sslmode=disable&search_path=social", os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"))
 	
-	repo, err := profiles.ProfilesRepo{}.New(dsn)
+	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
 
-	if err != nil {
-		panic(fmt.Sprintf("failed to create profileRepo, %v", err))
-	}
+	defer cancel()
 
+	db := postgres.InitPostgresWithTracing(ctx, dsn)
+	queries := datagen.New(db)
 	
 	jwt := jwtutil.JwtImpl{}
 	createHand := create.ProfileCreateHandler{}.New(
 		uc_create.ProfileCreate{}.New(
-			repo,
+			queries,
 			config.GetJwtConfig(),
 			jwt,
 		),

@@ -4,26 +4,24 @@ import (
 	"context"
 	"fmt"
 
+	jwt "github.com/London57/jwt-auth/jwtutil"
 	"github.com/London57/profiles/internal/config"
-	"github.com/London57/profiles/internal/data/entities"
-	"github.com/London57/profiles/internal/presentation/api/http/dtos/request"
+	"github.com/London57/profiles/internal/data/datagen"
 	"github.com/London57/profiles/internal/presentation/api/http/dtos/response"
-	jwt "github.com/London57/profiles/pkg/jwtutil"
 	"github.com/London57/profiles/pkg/password"
-	"github.com/google/uuid"
 )
 
 type repo interface {
-	CreateProfile(context.Context, entities.ProfileEntity) (*entities.ProfileEntity, error)
+	CreateProfile(context.Context, datagen.CreateProfileParams) (datagen.SocialProfile, error)
 }
 
 type ProfileCreate struct {
 	repo repo
-	jwtConfig config.JWT
-	jwtutil jwt.JWT
+	jwtConfig config.JwtConfig
+	jwtutil jwt.Jwt
 }
 
-func (ProfileCreate) New(repo repo, config config.JWT, jwtutil jwt.JWT) ProfileCreate {
+func (ProfileCreate) New(repo repo, config config.JwtConfig, jwtutil jwt.Jwt) ProfileCreate {
 	return ProfileCreate{
 		jwtConfig: config,
 		repo: repo,
@@ -31,43 +29,30 @@ func (ProfileCreate) New(repo repo, config config.JWT, jwtutil jwt.JWT) ProfileC
 	}
 }
 
-func (uc ProfileCreate) Exec(ctx context.Context, r request.ProfileCreateRequest) (response.ProfileCreateResponse, error) {
-	pswd := r.Password
-	pswd, err := password.GeneratePasswordHash(pswd)
+func (uc ProfileCreate) Exec(ctx context.Context, data datagen.CreateProfileParams) (response.ProfileCreateResponse, error) {
+	hash, err := password.GeneratePasswordHash(data.Password)
 	if err != nil {
 		return response.ProfileCreateResponse{}, err
 	}
+	data.Password = hash
 	
-	data := entities.ProfileEntity{
-		ID: uuid.Nil,
-		Name: r.Name,
-		Birthday: r.Birthday,
-		Email: r.Email,
-		Phone_number: r.Phone_number,
-		Username: r.Username,
-		Password: pswd,
-		Gender: r.Gender,
-		Longitude: r.Longitude,
-		Latitude: r.Latitude,
-	}
-	
-	entity, err := uc.repo.CreateProfile(ctx, data)
+	profile, err := uc.repo.CreateProfile(ctx, data)
 	if err != nil {
 		return response.ProfileCreateResponse{}, err
 	}
 
-	access_token, err := uc.jwtutil.CreateAccessToken(entity.ID, entity.Username, uc.jwtConfig.AccessTokenSecret, uc.jwtConfig.AccessTokenExpiryHour)
+	access_token, err := uc.jwtutil.CreateAccessToken(profile.ID, profile.Username, uc.jwtConfig.AccessTokenSecret, uc.jwtConfig.AccessTokenExpiryHour)
 	if err != nil {
 		return response.ProfileCreateResponse{}, fmt.Errorf("jwt error: %w", err)
 	}
 
-	refresh_token, err := uc.jwtutil.CreateRefreshToken(entity.ID, entity.Name, uc.jwtConfig.RefreshTokenSecret, uc.jwtConfig.RefreshTokenExpiryHour)
+	refresh_token, err := uc.jwtutil.CreateRefreshToken(profile.ID, profile.Name, uc.jwtConfig.RefreshTokenSecret, uc.jwtConfig.RefreshTokenExpiryHour)
 	if err != nil {
 		return response.ProfileCreateResponse{}, fmt.Errorf("jwt error: %w", err)
 	}
 
 	resp := response.ProfileCreateResponse{
-		ID: entity.ID,
+		ID: profile.ID,
 		Jwt_access_token: access_token,
 		Jwt_refresh_token: refresh_token,
 	}
