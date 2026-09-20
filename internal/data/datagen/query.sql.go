@@ -14,7 +14,7 @@ import (
 )
 
 const createProfile = `-- name: CreateProfile :one
-INSERT INTO social.profiles (birthday, email, name, username, password, gender, longitude, latitude, phone_number) VALUES ($1::date, $2::varchar(320), $3::varchar(50), $4::varchar(30), $5::varchar(250), $6::smallint, $7::real, $8::real, $9::varchar(15)) RETURNING id, version, email, phone_number, username, password, name, birtday, gender, longitude, latitude, like_ttl
+INSERT INTO social.profiles (birthday, email, name, username, password, gender, longitude, latitude, phone_number) VALUES ($1::date, $2::varchar(320), $3::varchar(50), $4::varchar(30), $5::varchar(250), $6::smallint, $7::real, $8::real, $9::varchar(15)) RETURNING id, version, email, phone_number, username, password, name, birthday, gender, longitude, latitude, like_ttl
 `
 
 type CreateProfileParams struct {
@@ -50,13 +50,96 @@ func (q *Queries) CreateProfile(ctx context.Context, arg CreateProfileParams) (S
 		&i.Username,
 		&i.Password,
 		&i.Name,
-		&i.Birtday,
+		&i.Birthday,
 		&i.Gender,
 		&i.Longitude,
 		&i.Latitude,
 		&i.LikeTtl,
 	)
 	return i, err
+}
+
+const findUsersInRadius = `-- name: FindUsersInRadius :many
+SELECT 
+	id,
+	email,
+    phone_number,
+	username,
+	name,
+	birthday,
+	gender,
+	longitude,
+	latitude,
+    earth_distance(ll_to_earth($1, $2), ll_to_earth(latitude, longitude)) AS distance
+FROM social.profiles
+WHERE earth_distance(ll_to_earth($1, $2), ll_to_earth(latitude, longitude)) <= $3
+AND
+    $4 <= date_part('year', age(birthday)) 
+    AND
+    date_part('year', age(birthday)) <= $5
+ORDER BY distance
+LIMIT 100
+`
+
+type FindUsersInRadiusParams struct {
+	UserLatitude  float64       `json:"user_latitude"`
+	UserLongitude float64       `json:"user_longitude"`
+	Radius        null_v4.Float `json:"radius"`
+	AgeFrom       null_v4.Time  `json:"age_from"`
+	AgeTo         null_v4.Time  `json:"age_to"`
+}
+
+type FindUsersInRadiusRow struct {
+	ID          uuid.UUID      `json:"id"`
+	Email       string         `json:"email"`
+	PhoneNumber null_v4.String `json:"phone_number"`
+	Username    string         `json:"username"`
+	Name        string         `json:"name"`
+	Birthday    time.Time      `json:"birthday"`
+	Gender      int16          `json:"gender"`
+	Longitude   null_v4.Float  `json:"longitude"`
+	Latitude    null_v4.Float  `json:"latitude"`
+	Distance    float64        `json:"distance"`
+}
+
+func (q *Queries) FindUsersInRadius(ctx context.Context, arg FindUsersInRadiusParams) ([]FindUsersInRadiusRow, error) {
+	rows, err := q.db.QueryContext(ctx, findUsersInRadius,
+		arg.UserLatitude,
+		arg.UserLongitude,
+		arg.Radius,
+		arg.AgeFrom,
+		arg.AgeTo,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FindUsersInRadiusRow
+	for rows.Next() {
+		var i FindUsersInRadiusRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.PhoneNumber,
+			&i.Username,
+			&i.Name,
+			&i.Birthday,
+			&i.Gender,
+			&i.Longitude,
+			&i.Latitude,
+			&i.Distance,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getProfileByEmail = `-- name: GetProfileByEmail :one
@@ -113,7 +196,7 @@ SET
     username = COALESCE($4::varchar(30), username),
     longitude = COALESCE($5::real, longitude),
     latitude = COALESCE($6::real, latitude),
-    like_ttl = COALESCE($7::smallint, like_ttl) RETURNING id, version, email, phone_number, username, password, name, birtday, gender, longitude, latitude, like_ttl
+    like_ttl = COALESCE($7::smallint, like_ttl) RETURNING id, version, email, phone_number, username, password, name, birthday, gender, longitude, latitude, like_ttl
 `
 
 type UpdateProfileParams struct {
@@ -145,7 +228,7 @@ func (q *Queries) UpdateProfile(ctx context.Context, arg UpdateProfileParams) (S
 		&i.Username,
 		&i.Password,
 		&i.Name,
-		&i.Birtday,
+		&i.Birthday,
 		&i.Gender,
 		&i.Longitude,
 		&i.Latitude,

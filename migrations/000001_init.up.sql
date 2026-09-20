@@ -1,3 +1,6 @@
+create extension if not exists cube;
+create extension if not exists earthdistance;
+
 create schema social;
 
 create table social.profiles(

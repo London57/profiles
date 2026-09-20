@@ -26,7 +26,7 @@ type SocialProfile struct {
 	Username    string         `json:"username"`
 	Password    string         `json:"password"`
 	Name        string         `json:"name"`
-	Birtday     time.Time      `json:"birtday"`
+	Birthday    time.Time      `json:"birthday"`
 	Gender      int16          `json:"gender"`
 	Longitude   null_v4.Float  `json:"longitude"`
 	Latitude    null_v4.Float  `json:"latitude"`

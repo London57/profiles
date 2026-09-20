@@ -23,3 +23,25 @@ SET
     age_to = COALESCE(sqlc.narg(age_to)::smallint, latitude),
     radius = COALESCE(sqlc.narg(radius)::int, latitude)
 WHERE profile_id=sqlc.arg(profile_id)::uuid RETURNING *;
+
+
+-- name: FindUsersInRadius :many
+SELECT 
+	id,
+	email,
+    phone_number,
+	username,
+	name,
+	birthday,
+	gender,
+	longitude,
+	latitude,
+    earth_distance(ll_to_earth(sqlc.arg(user_latitude), sqlc.arg(user_longitude)), ll_to_earth(latitude, longitude)) AS distance
+FROM social.profiles
+WHERE earth_distance(ll_to_earth(sqlc.arg(user_latitude), sqlc.arg(user_longitude)), ll_to_earth(latitude, longitude)) <= sqlc.arg(radius)
+AND
+    sqlc.narg(age_from) <= date_part('year', age(birthday)) 
+    AND
+    date_part('year', age(birthday)) <= sqlc.narg(age_to)
+ORDER BY distance
+LIMIT 100;
